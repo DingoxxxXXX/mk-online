@@ -455,7 +455,24 @@ function initPeer(asHost, targetCode=null){
   setLobbyStatus('Подключение к сигнальному серверу...');
   const peerId = asHost ? 'mk-' + Math.random().toString(36).substring(2,7) : undefined;
   
-  peer = new Peer(peerId, { debug: 1 });
+  // Конфигурация с надежными STUN-серверами Google для обхода NAT
+  const peerConfig = {
+    debug: 1,
+    config: {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' }
+      ]
+    }
+  };
+
+  if(peer){
+    try{ peer.destroy(); }catch(e){}
+    peer = null;
+  }
+
+  peer = new Peer(peerId, peerConfig);
 
   peer.on('open', id => {
     if(asHost){
